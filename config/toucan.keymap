@@ -44,9 +44,10 @@
  *      or macOS Spanish/US layouts. Change to a Unicode macro if needed.
  *   Emoji (SYM pos 31): &kp LG(DOT) = Win+. (Windows emoji picker).
  *   Fn (BASE pos 24 / ADJ pos 17): currently &trans — assign as needed.
- *   LNKCHK (NAV pos 26): &ind_con from zmk-rgbled-widget — split-link probe for
- *      diagnosing the sporadic right-half dropout. It is BEHAVIOR_LOCALITY_GLOBAL,
- *      so one press blinks BOTH halves' RGB LEDs. Read the RIGHT half's LED:
+ *   LNKCHK (NAV pos 24): &ind_con from zmk-rgbled-widget — split-link probe, kept
+ *      as a regression check for the right-half dropout fixed by upstream #19
+ *      (CONFIG_INPUT_THREAD_STACK_SIZE). It is BEHAVIOR_LOCALITY_GLOBAL, so one
+ *      press blinks BOTH halves' RGB LEDs. Read the RIGHT half's LED:
  *        blue    → right MCU alive and the link works in both directions
  *        red     → right MCU alive and knows it is disconnected
  *        nothing → right MCU wedged, or the central→peripheral direction is dead
@@ -168,7 +169,7 @@
         //  ├──────┼────────┼──────┼──────┼──────┼───────┤   ├──────┼──────┼──────┼──────┼──────┼────────┤
         //  │BRI_DN│  GUI   │ ALT  │ CTL  │ SHF  │RHT_CLK│   │  ←   │  ↓   │  ↑   │  →   │ DEL  │ VOL_DN │
         //  ├──────┼────────┼──────┼──────┼──────┼───────┤   ├──────┼──────┼──────┼──────┼──────┼────────┤
-        //  │ C_PP │STD_UNLK│LNKCHK│      │      │       │   │ REP  │ INS  │      │      │      │  MUTE  │
+        //  │LNKCHK│STD_UNLK│ C_PP │      │      │       │   │ REP  │ INS  │      │      │      │  MUTE  │
         //  ╰──────┴────────┴──────┼──────┼──────┼───────┤   ├──────┼──────┼──────┴──────┴──────┴────────╯
         //                         │(NUM) │ held │       │   │ DEL  │(SYM*)│ ESC  │
         //                         ╰──────┴──────┴───────╯   ╰──────┴──────┴──────╯
@@ -179,7 +180,7 @@
             bindings = <
                 &kp C_BRI_UP  &trans         &trans    &trans     &trans     &mkp MCLK    &kp HOME   &kp PG_UP  &kp PG_DN  &kp END    &kp BSPC  &kp C_VOL_UP
                 &kp C_BRI_DN  &kp LGUI       &kp LALT  &kp LCTRL  &kp LSHFT  &mkp RCLK    &kp LEFT   &kp DOWN   &kp UP     &kp RIGHT  &kp DEL   &kp C_VOL_DN
-                &kp C_PP      &studio_unlock &ind_con  &trans     &trans     &trans       &key_repeat &kp INS   &trans     &trans     &trans    &kp C_MUTE
+                &ind_con      &studio_unlock &kp C_PP  &trans     &trans     &trans       &key_repeat &kp INS   &trans     &trans     &trans    &kp C_MUTE
                                                         &trans     &trans     &trans       &kp DEL    &trans     &kp ESC
             >;
         };
