@@ -251,22 +251,24 @@ static void force_redraw_all_widgets(void) {
 }
 
 /*
- * The peripheral-age readout is time-derived, and nothing in ZMK raises an event
- * when the right half goes *silent* -- so it needs a tick of its own.
+ * Whether the right half has gone quiet is time-derived, and nothing in ZMK
+ * raises an event when a peripheral goes *silent* -- so the check needs a tick
+ * of its own, otherwise the battery icon would only be re-evaluated whenever
+ * some unrelated widget happened to redraw.
  *
- * Ten seconds is ample resolution: the failure persists until the right half is
- * manually reset, so there is no rush to read a climbing counter. Runs on the
- * display work queue, the same context the widget listeners redraw from, so this
- * adds no new concurrency on the canvas buffer.
+ * Half of PERIPHERAL_STALE_AFTER_S, so the icon clears within 1.5x the stale
+ * threshold of the right half actually dying. Runs on the display work queue,
+ * the same context the widget listeners redraw from, so this adds no new
+ * concurrency on the canvas buffer.
  */
-#define PERIPHERAL_AGE_REFRESH_S 10
+#define PERIPHERAL_STALE_CHECK_S 15
 
-static struct k_work_delayable peripheral_age_refresh_work;
+static struct k_work_delayable peripheral_stale_check_work;
 
-static void peripheral_age_refresh_cb(struct k_work *work) {
+static void peripheral_stale_check_cb(struct k_work *work) {
     force_redraw_all_widgets();
-    k_work_schedule_for_queue(zmk_display_work_q(), &peripheral_age_refresh_work,
-                              K_SECONDS(PERIPHERAL_AGE_REFRESH_S));
+    k_work_schedule_for_queue(zmk_display_work_q(), &peripheral_stale_check_work,
+                              K_SECONDS(PERIPHERAL_STALE_CHECK_S));
 }
 
 static int display_activity_event_handler(const zmk_event_t *eh) {
@@ -316,9 +318,9 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget_layer_status_init();
     widget_output_status_init();
 
-    k_work_init_delayable(&peripheral_age_refresh_work, peripheral_age_refresh_cb);
-    k_work_schedule_for_queue(zmk_display_work_q(), &peripheral_age_refresh_work,
-                              K_SECONDS(PERIPHERAL_AGE_REFRESH_S));
+    k_work_init_delayable(&peripheral_stale_check_work, peripheral_stale_check_cb);
+    k_work_schedule_for_queue(zmk_display_work_q(), &peripheral_stale_check_work,
+                              K_SECONDS(PERIPHERAL_STALE_CHECK_S));
 
     return 0;
 }

@@ -1,5 +1,4 @@
 #include <zephyr/kernel.h>
-#include <stdio.h>
 
 #include "battery_peripheral.h"
 #include "../assets/custom_fonts.h"
@@ -14,7 +13,7 @@
  * as connected" was never evidence of anything.
  *
  * These timestamps make it honest: they record when the central last heard
- * from the right half, and the age is rendered on screen.
+ * from the right half, so the icon can be withheld once that goes stale.
  *
  * uint32_t ms rather than the int64_t k_uptime_get() returns: an aligned
  * 32-bit access is atomic on Cortex-M, so the event-manager context can write
@@ -38,7 +37,7 @@ static bool ever_heard;
  * all live over there.
  *
  * A false positive is cheap and self-correcting: the icon returns on the next
- * right-hand keypress, and the age counter below never lies either way.
+ * right-hand keypress.
  */
 #define PERIPHERAL_STALE_AFTER_S 30
 #define LOCAL_ACTIVE_WITHIN_S    10
@@ -94,42 +93,9 @@ static void draw_level_peripheral(lv_obj_t *canvas, const struct status_state *s
     }
 }
 
-/*
- * Seconds since the right half last said anything, drawn in the free band
- * between the battery row (y 10..27) and the layer name (y 70).
- *
- * In normal use this sits at 0-2 s and resets on every right-hand keypress.
- * When the right half wedges it climbs and keeps climbing no matter what you
- * press -- that divergence is the whole diagnostic. It is also honest while
- * idle: the counter rises because the right half genuinely has not spoken.
- */
-static void draw_peripheral_age(lv_obj_t *canvas) {
-    lv_draw_label_dsc_t label_dsc;
-    init_label_dsc(&label_dsc, LVGL_FOREGROUND, &quinquefive_8, LV_TEXT_ALIGN_CENTER);
-
-    char text[12];
-    if (!ever_heard) {
-        // Never heard from it since boot -- distinct from "heard, then lost".
-        snprintf(text, sizeof(text), "R --");
-    } else {
-        uint32_t secs = peripheral_silent_seconds();
-        if (secs < 100) {
-            snprintf(text, sizeof(text), "R %uS", (unsigned int)secs);
-        } else if (secs < 100 * 60) {
-            snprintf(text, sizeof(text), "R %uM", (unsigned int)(secs / 60U));
-        } else {
-            snprintf(text, sizeof(text), "R 99M+");
-        }
-    }
-
-    lv_canvas_draw_text(canvas, 0, 32, SCREEN_WIDTH, &label_dsc, text);
-}
-
 void draw_battery_peripheral_status(lv_obj_t *canvas, const struct status_state *state) {
     // Only claim the right half is present if the evidence says it still is.
     if (!peripheral_looks_dead()) {
         draw_level_peripheral(canvas, state);
     }
-
-    draw_peripheral_age(canvas);
 }
