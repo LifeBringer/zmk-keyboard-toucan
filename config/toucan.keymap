@@ -1,5 +1,5 @@
 // Miryoku for the beekeeb Toucan2 (42-key split).
-// Engine: https://github.com/manna-harbour/miryoku_zmk (vendored under miryoku/)
+// Engine: https://github.com/manna-harbour/miryoku_zmk (vendored under config/miryoku/)
 // Options: QWERTY alphas, inverted-T navigation, flipped layers --
 // see miryoku/custom_config.h. Board mapping: miryoku/mapping/42/toucan2.h
 //
@@ -8,9 +8,9 @@
 // After flashing a changed layer list, flash settings_reset (or use ZMK
 // Studio "Restore Stock Settings") so stored Studio edits don't shadow it.
 
-#include "../miryoku/custom_config.h"
-#include "../miryoku/mapping/42/toucan2.h"
-#include "../miryoku/miryoku.dtsi"
+#include "miryoku/custom_config.h"
+#include "miryoku/mapping/42/toucan2.h"
+#include "miryoku/miryoku.dtsi"
 
 // ---------------------------------------------------------------------------
 // Mouse layer (keymap index 9, right after the 9 Miryoku layers).
