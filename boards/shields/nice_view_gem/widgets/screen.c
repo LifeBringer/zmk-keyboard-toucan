@@ -10,7 +10,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/endpoint_changed.h>
 #include <zmk/events/layer_state_changed.h>
-#include <zmk/events/position_state_changed.h>
 #include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/events/wpm_state_changed.h>
 #include <zmk/battery.h>
@@ -22,11 +21,27 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/usb.h>
 #include <zmk/split/central.h>
 
+#if defined(CONFIG_TOUCAN_STATUS_SCREEN) && CONFIG_TOUCAN_STATUS_SCREEN == 2
+#include "battery_arc.h"
+#include "battery_arc_peripheral.h"
+#include "profile_arc.h"
+#include "output_arc.h"
+#include "chart.h"
+#else
 #include "battery.h"
 #include "battery_peripheral.h"
-#include "layer.h"
-#include "output.h"
 #include "profile.h"
+#include "output.h"
+#endif
+
+#if defined(CONFIG_TOUCAN_STATUS_SCREEN) && CONFIG_TOUCAN_STATUS_SCREEN == 1
+#include "layer_logo.h"
+#elif defined(CONFIG_TOUCAN_STATUS_SCREEN) && CONFIG_TOUCAN_STATUS_SCREEN == 2
+#include "layer_arc.h"
+#else
+#include "layer.h"
+#endif
+
 #include "screen.h"
 #include "sleep.h"
 
@@ -51,6 +66,9 @@ static void draw_top(lv_obj_t *widget, lv_color_t cbuf[], const struct status_st
 
     // Draw widgets
     draw_output_status(canvas, state);
+    #if defined(CONFIG_TOUCAN_STATUS_SCREEN) && CONFIG_TOUCAN_STATUS_SCREEN == 2
+    draw_chart_status(canvas, state);
+    #endif
     draw_layer_status(canvas, state);
     draw_profile_status(canvas, state);
     draw_battery_status(canvas, state);
@@ -118,15 +136,9 @@ static void battery_peripheral_status_update_cb(struct battery_peripheral_status
 static struct battery_peripheral_status_state battery_peripheral_status_get_state(const zmk_event_t *eh) {
     const struct zmk_peripheral_battery_state_changed *ev = as_zmk_peripheral_battery_state_changed(eh);
 
-    // ZMK_DISPLAY_WIDGET_LISTENER's generated init calls this with NULL to prime
-    // the initial state, so guard both uses of ev -- a NULL here is boot, not a
-    // report from the right half, and must not count as having heard from it.
-    if (ev != NULL) {
-        note_peripheral_heard();
-    }
 
     return (struct battery_peripheral_status_state){
-        .level = (ev != NULL) ? ev->state_of_charge : 0,
+        .level = ev->state_of_charge,
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
         .usb_present = zmk_usb_is_powered(),
 #endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
@@ -137,42 +149,6 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_battery_peripheral_status, struct battery_per
                             battery_peripheral_status_update_cb, battery_peripheral_status_get_state);
 
 ZMK_SUBSCRIPTION(widget_battery_peripheral_status, zmk_peripheral_battery_state_changed);
-
-/**
- * Split-link heartbeat
- *
- * Two feeds, merged in battery_peripheral.c. The peripheral battery report above
- * is the slow one, and slower than its 60 s sample interval suggests -- ZMK only
- * raises it when the percentage actually changes -- so it is a backstop, not a
- * clock. Keypresses forwarded from the right half are the feed that matters: one
- * reaches the central as a zmk_position_state_changed whose source is not LOCAL,
- * and that is exactly the traffic that stops when the peripheral wedges while the
- * BLE link stays up.
- *
- * Local keypresses are stamped too: peripheral silence only means something while
- * the keyboard is actually in use, otherwise an idle keyboard looks identical to
- * a wedged right half.
- *
- * This handler only stamps timestamps; it deliberately does not redraw, since it
- * runs on every keypress.
- **/
-
-static int peripheral_heartbeat_event_handler(const zmk_event_t *eh) {
-    const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
-    if (ev == NULL) {
-        return 0;
-    }
-
-    if (ev->source == ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL) {
-        note_local_activity();
-    } else {
-        note_peripheral_heard();
-    }
-    return 0;
-}
-
-ZMK_LISTENER(nice_view_gem_peripheral_heartbeat, peripheral_heartbeat_event_handler);
-ZMK_SUBSCRIPTION(nice_view_gem_peripheral_heartbeat, zmk_position_state_changed);
 
 /**
  * Layer status
@@ -250,27 +226,6 @@ static void force_redraw_all_widgets(void) {
     }
 }
 
-/*
- * Whether the right half has gone quiet is time-derived, and nothing in ZMK
- * raises an event when a peripheral goes *silent* -- so the check needs a tick
- * of its own, otherwise the battery icon would only be re-evaluated whenever
- * some unrelated widget happened to redraw.
- *
- * Half of PERIPHERAL_STALE_AFTER_S, so the icon clears within 1.5x the stale
- * threshold of the right half actually dying. Runs on the display work queue,
- * the same context the widget listeners redraw from, so this adds no new
- * concurrency on the canvas buffer.
- */
-#define PERIPHERAL_STALE_CHECK_S 15
-
-static struct k_work_delayable peripheral_stale_check_work;
-
-static void peripheral_stale_check_cb(struct k_work *work) {
-    force_redraw_all_widgets();
-    k_work_schedule_for_queue(zmk_display_work_q(), &peripheral_stale_check_work,
-                              K_SECONDS(PERIPHERAL_STALE_CHECK_S));
-}
-
 static int display_activity_event_handler(const zmk_event_t *eh) {
     struct zmk_activity_state_changed *ev = as_zmk_activity_state_changed(eh);
     if (ev == NULL) {
@@ -300,6 +255,34 @@ static int display_activity_event_handler(const zmk_event_t *eh) {
 ZMK_LISTENER(nice_view_gem_display, display_activity_event_handler);
 ZMK_SUBSCRIPTION(nice_view_gem_display, zmk_activity_state_changed);
 
+#if defined(CONFIG_TOUCAN_STATUS_SCREEN) && CONFIG_TOUCAN_STATUS_SCREEN == 2
+/**
+ * WPM status
+ */
+    static void set_chart_status(struct zmk_widget_screen *widget, struct chart_status_state state) {
+    widget->state.wpm = state.wpm;
+    draw_top(widget->obj, widget->cbuf, &widget->state);
+}
+
+static void chart_status_update_cb(struct chart_status_state state) {
+    struct zmk_widget_screen *widget;
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        set_chart_status(widget, state);
+    }
+}
+
+static struct chart_status_state chart_status_get_state(const zmk_event_t *eh) {
+    const struct zmk_wpm_state_changed *ev = as_zmk_wpm_state_changed(eh);
+    return (struct chart_status_state){
+        .wpm = (ev != NULL) ? ev->state : zmk_wpm_get_state(),
+    };
+}
+
+ZMK_DISPLAY_WIDGET_LISTENER(widget_chart_status, struct chart_status_state,
+                            chart_status_update_cb, chart_status_get_state);
+ZMK_SUBSCRIPTION(widget_chart_status, zmk_wpm_state_changed);
+#endif
+
 /**
  * Initialization
  **/
@@ -318,9 +301,9 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget_layer_status_init();
     widget_output_status_init();
 
-    k_work_init_delayable(&peripheral_stale_check_work, peripheral_stale_check_cb);
-    k_work_schedule_for_queue(zmk_display_work_q(), &peripheral_stale_check_work,
-                              K_SECONDS(PERIPHERAL_STALE_CHECK_S));
+    #if defined(CONFIG_TOUCAN_STATUS_SCREEN) && CONFIG_TOUCAN_STATUS_SCREEN == 2
+    widget_chart_status_init();
+    #endif
 
     return 0;
 }
