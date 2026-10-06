@@ -24,8 +24,9 @@
 // standalone Button layer is removed (see miryoku/custom_config.h); this
 // layer carries its content instead.
 //
-// Reached by touching the trackpad (is_touching_processor below), or by
-// holding Z or / -- all resolve to U_MOUSE via miryoku/custom_config.h.
+// Reached by touching the trackpad (is_touching_processor below), or on
+// the Extra layer by holding Z or / -- all resolve to U_MOUSE via
+// miryoku/custom_config.h.
 // (On the Base layer the thumb TAB key holds for Sym; the touch Mouse
 // layer itself is the trackpad's job.)
 // ---------------------------------------------------------------------------

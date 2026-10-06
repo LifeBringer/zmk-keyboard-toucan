@@ -74,9 +74,9 @@ MIRYOKU_X(MOUSEVIR, "MouseVir")
 // keymap index 9, right after the 9 Miryoku layers above.
 #define U_MOUSE 9
 
-// U_BUTTON aliases the Mouse layer: the engine's Base layer defines hold
-// Z / / for the Button layer (U_LT(U_BUTTON, ...)). Both now resolve to
-// the touch Mouse layer, which carries the old Button layer's content.
+// U_BUTTON aliases the Mouse layer: the Extra layer holds Z / / for the
+// Button layer (U_LT(U_BUTTON, ...)), as stock Miryoku does. Both resolve
+// to the touch Mouse layer, which carries the old Button layer's content.
 // (Also keeps the MIRYOKU_KLUDGE_* combos, which reference U_MOUSE,
 // compiling if ever enabled.)
 #define U_BUTTON U_MOUSE
@@ -102,6 +102,10 @@ MIRYOKU_X(MOUSEVIR, "MouseVir")
 // (TAB is tap-only for the touch Mouse layer -- that layer belongs to the
 // trackpad -- but TAB hold for Sym is fine.)
 //
+// Z and / are plain keys here: stock Miryoku holds them for the Button
+// layer, but on Base the Mouse layer belongs to the trackpad alone.
+// (Extra keeps the stock Z / / holds.)
+//
 // Outer column (per-layer, via the mapping macro): left = VolUp / VolDn /
 // Mute top-to-bottom, right = BriUp / BriDn / AltGr top-to-bottom. All
 // other layers leave the outer column blank (U_NA).
@@ -109,7 +113,7 @@ MIRYOKU_X(MOUSEVIR, "MouseVir")
 #define MIRYOKU_LAYER_BASE \
 &kp Q,             &kp W,             &kp E,             &kp R,             &kp T,             &kp Y,             &kp U,             &kp I,             &kp O,             &kp P,             \
 U_MT(LGUI, A),     U_MT(LALT, S),     U_MT(LCTRL, D),    U_MT(LSHFT, F),    &kp G,             &kp H,             U_MT_R(RSHFT, J),  U_MT_R(RCTRL, K),  U_MT_R(RALT, L),   U_MT_R(RGUI, SQT), \
-U_LT(U_BUTTON, Z), U_MT(RALT, X),    &kp C,             &kp V,             &kp B,             &kp N,             &kp M,             &kp COMMA,         &kp DOT,           U_LT(U_BUTTON, SLASH),\
+&kp Z,             U_MT(RALT, X),    &kp C,             &kp V,             &kp B,             &kp N,             &kp M,             &kp COMMA,         &kp DOT,           &kp SLASH,         \
 U_NP,              U_NP,              U_LT(U_FUN, ESC),  U_LT(U_NUM, SPACE),U_LT(U_SYM, TAB),  U_LT(U_MOUSEVIR, RET),U_LT(U_NAV, BSPC),U_LT(U_MEDIA, DEL),U_NP,             U_NP,              \
 &kp C_VOL_UP,     &kp C_VOL_DN,     &kp C_MUTE,        &kp C_BRI_UP,      &kp C_BRI_DN,      &kp RALT
 

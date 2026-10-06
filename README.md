@@ -27,7 +27,7 @@ The source for the diagram is [docs/keymap.html](docs/keymap.html). It is a stan
 
 ## Trackpad
 
-- **Touch** the trackpad to hold the **Mouse** layer: mouse buttons on the thumbs, clipboard on the top and bottom rows, and plain mods on the home row. Holding Z or `/` reaches the same layer without touching the pad.
+- **Touch** the trackpad to hold the **Mouse** layer: mouse buttons on the thumbs, clipboard on the top and bottom rows, and plain mods on the home row. On the Extra layer, holding Z or `/` reaches the same layer without touching the pad.
 - **Scroll:** while **Nav** (hold BSPC) or **Num** (hold SPACE) is held, one-finger motion scrolls. Two-finger scrolling works anywhere (TPS43 native).
 - **Gestures** (macOS shortcuts by default; define `TOUCAN_WIN_MODE` in [toucan.dtsi](boards/shields/toucan/toucan.dtsi) for Windows):
   - pinch zooms (Cmd -/=);
