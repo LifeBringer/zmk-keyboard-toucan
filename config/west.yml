@@ -18,9 +18,9 @@ manifest:
       revision: v0.3
     - name: zmk_driver_azoteq
       remote: beekeeb
-      revision: main
+      revision: 52fcfe5026c9f74d611d05b2084548e046a7e274 # main @ 2026-06-21
     - name: zmk-input-zoom
       remote: beekeeb
-      revision: main
+      revision: 91bbe0c0e02145da50c9df798489479d28be1804 # main @ 2026-06-23
   self:
     path: config
