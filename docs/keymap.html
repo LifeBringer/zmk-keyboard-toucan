@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:,">
+  <title>Toucan2 Miryoku Keymap</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: #eef0f4;
+      --panel: #ffffff;
+      --panel-soft: #f5f6f8;
+      --key: #e4e7ec;
+      --key-edge: #acb4c1;
+      --empty-edge: #d3d7de;
+      --text: #181b22;
+      --muted: #5e6673;
+      --faint: #9299a4;
+      --shadow: rgba(19, 25, 36, .09);
+      --boot: #cf3e49;
+      --pressed-text: #10141b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page: #151820;
+        --panel: #1d222c;
+        --panel-soft: #191d26;
+        --key: #2b3340;
+        --key-edge: #536174;
+        --empty-edge: #252c37;
+        --text: #f0f3f7;
+        --muted: #a2abb8;
+        --faint: #687383;
+        --shadow: rgba(0, 0, 0, .28);
+        --boot: #ef6b74;
+        --pressed-text: #ffffff;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.35;
+    }
+    main {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 22px clamp(10px, 2.2vw, 28px) 26px;
+    }
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px 30px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(20px, 2.2vw, 27px);
+      line-height: 1.12;
+      letter-spacing: -.02em;
+      font-weight: 750;
+    }
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .defines {
+      font: 10px/1.45 "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      color: var(--muted);
+      min-width: 390px;
+    }
+    .defines div {
+      display: grid;
+      grid-template-columns: minmax(190px, max-content) 18px 1fr;
+      gap: 6px;
+    }
+    .define { color: var(--text); }
+    .defines .define-line {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+    .arrow { color: var(--faint); text-align: center; }
+    .layers {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px;
+    }
+    .layer {
+      min-width: 0;
+      background: var(--panel);
+      border-radius: 9px;
+      padding: 10px 11px 12px;
+      box-shadow: 0 1px 0 var(--shadow), 0 7px 22px -18px var(--shadow);
+      border-top: 2px solid color-mix(in srgb, var(--accent) 75%, transparent);
+    }
+    .layer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      min-height: 23px;
+    }
+    .layer h2 {
+      margin: 0;
+      color: var(--accent);
+      font-size: 15px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+    .activation {
+      min-width: 0;
+      color: var(--muted);
+      font: 600 11px/1.2 "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      text-align: right;
+    }
+    .activation-strip {
+      min-height: 48px;
+      margin: -1px 0 8px;
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      color: var(--muted);
+      font: 600 11px/1.2 "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    }
+    .strip-key {
+      min-width: 84px;
+      height: 44px;
+      padding: 0 15px;
+      border: 1px solid var(--accent);
+      border-radius: 5px;
+      background: color-mix(in srgb, var(--accent) 45%, transparent);
+      box-shadow: inset 0 4px 7px rgba(0, 0, 0, .34), 0 0 11px color-mix(in srgb, var(--accent) 30%, transparent);
+      color: var(--pressed-text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 850;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .board { min-width: 0; }
+    .key-row {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr)) 10px repeat(6, minmax(0, 1fr));
+      gap: 3px;
+      margin-bottom: 3px;
+    }
+    .key-row > :nth-child(7) { grid-column: 8; }
+    .thumb-row {
+      width: 51%;
+      min-width: 235px;
+      margin: 6px auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) 14px repeat(3, minmax(0, 1fr));
+      gap: 3px;
+    }
+    .thumb-row > :nth-child(4) { grid-column: 5; }
+    .key {
+      min-width: 0;
+      height: 40px;
+      border: 1px solid var(--key-edge);
+      border-radius: 5px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--key) 94%, white), var(--key));
+      box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--key-edge) 28%, transparent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 2px 1px 3px;
+      text-align: center;
+    }
+    @media (prefers-color-scheme: dark) {
+      .key { background: linear-gradient(180deg, color-mix(in srgb, var(--key) 92%, white), var(--key)); }
+    }
+    .tap {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: clip;
+      white-space: nowrap;
+      color: var(--text);
+      font-size: clamp(9px, .82vw, 13px);
+      font-weight: 730;
+      line-height: 1.05;
+      letter-spacing: -.015em;
+    }
+    .tap.long {
+      white-space: normal;
+      font-size: clamp(7px, .66vw, 10px);
+      line-height: .95;
+    }
+    .hold {
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      color: var(--accent);
+      font-size: clamp(7px, .63vw, 10px);
+      font-weight: 700;
+      line-height: 1.05;
+      margin-top: 3px;
+    }
+    .hold.long {
+      font-size: clamp(6px, .52vw, 8.5px);
+      letter-spacing: -.03em;
+    }
+    .pressed {
+      background: color-mix(in srgb, var(--accent) 45%, transparent);
+      border-color: var(--accent);
+      box-shadow: inset 0 4px 7px rgba(0, 0, 0, .34), 0 0 11px color-mix(in srgb, var(--accent) 30%, transparent);
+      opacity: 1;
+      transform: translateY(1px);
+    }
+    .pressed .tap {
+      color: var(--pressed-text);
+      font-size: clamp(9px, .82vw, 13px);
+      font-weight: 850;
+    }
+    .pressed-caption {
+      color: color-mix(in srgb, var(--pressed-text) 76%, transparent);
+      font: 800 6.5px/1 "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .09em;
+      margin-top: 3px;
+    }
+    .boot .tap { color: var(--boot); }
+    .boot { border-color: color-mix(in srgb, var(--boot) 55%, var(--key-edge)); }
+    .empty {
+      background: transparent;
+      border-color: var(--empty-edge);
+      box-shadow: none;
+      opacity: .55;
+    }
+    .unmapped {
+      background: #303742;
+      border-color: #6a7483;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, .34), inset 0 -1px 0 rgba(255, 255, 255, .05);
+      opacity: 1;
+    }
+    @media (prefers-color-scheme: dark) {
+      .unmapped {
+        background: #151a22;
+        border-color: #46515f;
+      }
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px 14px;
+    }
+    .legend span { max-width: 100%; }
+    footer {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+      margin-top: 12px;
+      padding: 0 2px;
+    }
+    @media (max-width: 970px) {
+      .intro { grid-template-columns: 1fr; align-items: start; }
+      .defines { min-width: 0; }
+      .layers { grid-template-columns: 1fr; }
+      .tap { font-size: clamp(9px, 1.65vw, 13px); }
+      .hold { font-size: clamp(7px, 1.25vw, 10px); }
+      .hold.long { font-size: clamp(6px, 1.05vw, 8.5px); }
+    }
+    @media (max-width: 520px) {
+      main { padding: 14px 4px 18px; }
+      .intro { gap: 10px; margin-bottom: 10px; padding: 0 5px; }
+      .subtitle { font-size: 10px; }
+      .defines { font-size: 8px; }
+      .defines div { grid-template-columns: minmax(152px, max-content) 10px 1fr; gap: 3px; }
+      .layers { gap: 8px; }
+      .layer { padding: 8px 4px 10px; border-radius: 7px; }
+      .layer-head { align-items: flex-start; margin-bottom: 7px; gap: 5px; padding-inline: 2px; }
+      .layer h2 { font-size: 14px; margin-top: 2px; }
+      .activation { font-size: 8.5px; max-width: 82%; }
+      .activation-strip { min-height: 44px; margin-bottom: 7px; padding-inline: 2px; gap: 8px; font-size: 8.5px; }
+      .strip-key { min-width: 76px; height: 42px; padding-inline: 12px; font-size: 12px; }
+      .key-row { grid-template-columns: repeat(6, minmax(0, 1fr)) 3px repeat(6, minmax(0, 1fr)); gap: 1px; margin-bottom: 2px; }
+      .thumb-row { width: 70%; min-width: 225px; grid-template-columns: repeat(3,minmax(0,1fr)) 7px repeat(3,minmax(0,1fr)); gap: 2px; margin-top: 5px; }
+      .key { height: 35px; border-radius: 4px; }
+      .tap { font-size: 7px; letter-spacing: -.05em; }
+      .tap.long { font-size: 5.7px; line-height: .95; letter-spacing: -.04em; }
+      .hold { font-size: 6.5px; margin-top: 2px; letter-spacing: -.04em; }
+      .hold.long { font-size: 5.5px; }
+      footer { font-size: 8.5px; margin-top: 9px; }
+    }
+    @media (max-width: 360px) {
+      .key { height: 33px; }
+      .tap { font-size: 7px; }
+      .hold { font-size: 6px; }
+      .thumb-row { min-width: 205px; }
+      .activation { max-width: 84%; }
+      .pressed-caption { font-size: 5.5px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <!-- Rebuilt from the current keyboards/toucan2-miryoku/layers.json source. -->
+    <header class="intro">
+      <div>
+        <h1>Miryoku · QWERTY · Custom Base thumbs · Flipped layers · Inverted-T Nav</h1>
+        <p class="subtitle">beekeeb Toucan2 (42-key) · Miryoku engine 559aa4b · QWERTY · inverted-T nav · flipped layers</p>
+      </div>
+      <div class="defines" aria-label="Configuration defines"><div class="define-line">MIRYOKU_ALPHAS=QWERTY (Base + Tap) · MIRYOKU_EXTRA=COLEMAKDH</div>
+<div class="define-line">MIRYOKU_NAV=INVERTEDT · MIRYOKU_LAYERS=FLIP · custom Base thumb mapping (Extra/Tap: original Miryoku thumbs)</div>
+<div class="define-line">custom 9-layer Miryoku list — Mouse + Button layers removed · new MouseVir layer</div>
+<div class="define-line">touch-activated Mouse layer: stock MOU + Button content (mouse buttons, clipboard, right-hand mods)</div>
+<div class="define-line">Fun layer: F10/F12 swapped (F10 top, F12 bottom)</div></div>
+    </header>
+    <div class="layers">
+<section class="layer" style="--accent:#6ea8fe" aria-labelledby="BASE-title">
+  <header class="layer-head">
+    <h2 id="BASE-title">Base</h2>
+    <div class="activation">default · MIRYOKU_ALPHAS=QWERTY</div>
+  </header>
+  <div class="board" role="img" aria-label="Base layer key layout">
+    <div class="key-row"><div class="key" aria-label="tap VolUp"><span class="tap">VolUp</span></div><div class="key" aria-label="tap Q"><span class="tap">Q</span></div><div class="key" aria-label="tap W"><span class="tap">W</span></div><div class="key" aria-label="tap E"><span class="tap">E</span></div><div class="key" aria-label="tap R"><span class="tap">R</span></div><div class="key" aria-label="tap T"><span class="tap">T</span></div><div class="key" aria-label="tap Y"><span class="tap">Y</span></div><div class="key" aria-label="tap U"><span class="tap">U</span></div><div class="key" aria-label="tap I"><span class="tap">I</span></div><div class="key" aria-label="tap O"><span class="tap">O</span></div><div class="key" aria-label="tap P"><span class="tap">P</span></div><div class="key" aria-label="tap BriUp"><span class="tap">BriUp</span></div></div>
+    <div class="key-row"><div class="key" aria-label="tap VolDn"><span class="tap">VolDn</span></div><div class="key" aria-label="tap A, hold LGUI (super)"><span class="tap">A</span><span class="hold long">LGUI (super)</span></div><div class="key" aria-label="tap S, hold LALT"><span class="tap">S</span><span class="hold">LALT</span></div><div class="key" aria-label="tap D, hold LCTRL"><span class="tap">D</span><span class="hold">LCTRL</span></div><div class="key" aria-label="tap F, hold LSHFT"><span class="tap">F</span><span class="hold">LSHFT</span></div><div class="key" aria-label="tap G"><span class="tap">G</span></div><div class="key" aria-label="tap H"><span class="tap">H</span></div><div class="key" aria-label="tap J, hold RSHFT"><span class="tap">J</span><span class="hold">RSHFT</span></div><div class="key" aria-label="tap K, hold RCTRL"><span class="tap">K</span><span class="hold">RCTRL</span></div><div class="key" aria-label="tap L, hold RALT"><span class="tap">L</span><span class="hold">RALT</span></div><div class="key" aria-label="tap &#x27;, hold RGUI (super)"><span class="tap">'</span><span class="hold long">RGUI (super)</span></div><div class="key" aria-label="tap BriDn"><span class="tap">BriDn</span></div></div>
+    <div class="key-row"><div class="key" aria-label="tap Mute"><span class="tap">Mute</span></div><div class="key" aria-label="tap Z"><span class="tap">Z</span></div><div class="key" aria-label="tap X, hold AltGr"><span class="tap">X</span><span class="hold">AltGr</span></div><div class="key" aria-label="tap C"><span class="tap">C</span></div><div class="key" aria-label="tap V"><span class="tap">V</span></div><div class="key" aria-label="tap B"><span class="tap">B</span></div><div class="key" aria-label="tap N"><span class="tap">N</span></div><div class="key" aria-label="tap M"><span class="tap">M</span></div><div class="key" aria-label="tap ,"><span class="tap">,</span></div><div class="key" aria-label="tap ."><span class="tap">.</span></div><div class="key" aria-label="tap /"><span class="tap">/</span></div><div class="key" aria-label="tap AltGr"><span class="tap">AltGr</span></div></div>
+    <div class="thumb-row"><div class="key" aria-label="tap ESC, hold →Fun"><span class="tap">ESC</span><span class="hold">→Fun</span></div><div class="key" aria-label="tap SPACE, hold →Num"><span class="tap">SPACE</span><span class="hold">→Num</span></div><div class="key" aria-label="tap TAB, hold →Sym"><span class="tap">TAB</span><span class="hold">→Sym</span></div><div class="key" aria-label="tap RET, hold →MouseVir"><span class="tap">RET</span><span class="hold long">→MouseVir</span></div><div class="key" aria-label="tap BSPC, hold →Nav"><span class="tap">BSPC</span><span class="hold">→Nav</span></div><div class="key" aria-label="tap DEL, hold →Media"><span class="tap">DEL</span><span class="hold">→Media</span></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#7bd88a" aria-labelledby="NAV-title">
+  <header class="layer-head">
+    <h2 id="NAV-title">Nav</h2>
+    <div class="activation">hold · MIRYOKU_NAV=INVERTEDT</div>
+  </header>
+  <div class="board" role="img" aria-label="Nav layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap PgUp"><span class="tap">PgUp</span></div><div class="key" aria-label="tap Home"><span class="tap">Home</span></div><div class="key" aria-label="tap Up"><span class="tap">Up</span></div><div class="key" aria-label="tap End"><span class="tap">End</span></div><div class="key" aria-label="tap Ins"><span class="tap">Ins</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap →Base"><span class="tap">→Base</span></div><div class="key" aria-label="tap →Extra"><span class="tap">→Extra</span></div><div class="key" aria-label="tap →Tap"><span class="tap">→Tap</span></div><div class="key empty" aria-label="empty"></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap PgDn"><span class="tap">PgDn</span></div><div class="key" aria-label="tap Left"><span class="tap">Left</span></div><div class="key" aria-label="tap Down"><span class="tap">Down</span></div><div class="key" aria-label="tap Right"><span class="tap">Right</span></div><div class="key" aria-label="tap Caps Word"><span class="tap long">Caps Word</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap RSHFT"><span class="tap">RSHFT</span></div><div class="key" aria-label="tap RCTRL"><span class="tap">RCTRL</span></div><div class="key" aria-label="tap RALT"><span class="tap">RALT</span></div><div class="key" aria-label="tap RGUI (super)"><span class="tap long">RGUI (super)</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Undo"><span class="tap">Undo</span></div><div class="key" aria-label="tap Cut"><span class="tap">Cut</span></div><div class="key" aria-label="tap Copy"><span class="tap">Copy</span></div><div class="key" aria-label="tap Paste"><span class="tap">Paste</span></div><div class="key" aria-label="tap Redo"><span class="tap">Redo</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap →Nav"><span class="tap">→Nav</span></div><div class="key" aria-label="tap →Num"><span class="tap">→Num</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key" aria-label="tap ESC"><span class="tap">ESC</span></div><div class="key" aria-label="tap SPACE"><span class="tap">SPACE</span></div><div class="key" aria-label="tap TAB"><span class="tap">TAB</span></div><div class="key empty" aria-label="empty"></div><div class="key pressed" aria-label="BSPC held to activate layer"><span class="tap">BSPC</span><span class="pressed-caption">HELD</span></div><div class="key empty" aria-label="empty"></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#e0a35e" aria-labelledby="NUM-title">
+  <header class="layer-head">
+    <h2 id="NUM-title">Num</h2>
+    <div class="activation">hold</div>
+  </header>
+  <div class="board" role="img" aria-label="Num layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Boot"><span class="tap">Boot</span></div><div class="key" aria-label="tap →Tap"><span class="tap">→Tap</span></div><div class="key" aria-label="tap →Extra"><span class="tap">→Extra</span></div><div class="key" aria-label="tap →Base"><span class="tap">→Base</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap ["><span class="tap">[</span></div><div class="key" aria-label="tap 7"><span class="tap">7</span></div><div class="key" aria-label="tap 8"><span class="tap">8</span></div><div class="key" aria-label="tap 9"><span class="tap">9</span></div><div class="key" aria-label="tap ]"><span class="tap">]</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap LGUI (super)"><span class="tap long">LGUI (super)</span></div><div class="key" aria-label="tap LALT"><span class="tap">LALT</span></div><div class="key" aria-label="tap LCTRL"><span class="tap">LCTRL</span></div><div class="key" aria-label="tap LSHFT"><span class="tap">LSHFT</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap ="><span class="tap">=</span></div><div class="key" aria-label="tap 4"><span class="tap">4</span></div><div class="key" aria-label="tap 5"><span class="tap">5</span></div><div class="key" aria-label="tap 6"><span class="tap">6</span></div><div class="key" aria-label="tap ;"><span class="tap">;</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap AltGr"><span class="tap">AltGr</span></div><div class="key" aria-label="tap →Nav"><span class="tap">→Nav</span></div><div class="key" aria-label="tap →Num"><span class="tap">→Num</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap \"><span class="tap">\</span></div><div class="key" aria-label="tap 1"><span class="tap">1</span></div><div class="key" aria-label="tap 2"><span class="tap">2</span></div><div class="key" aria-label="tap 3"><span class="tap">3</span></div><div class="key" aria-label="tap `"><span class="tap">`</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key empty" aria-label="empty"></div><div class="key pressed" aria-label="SPACE held to activate Num"><span class="tap">SPACE</span><span class="pressed-caption">HELD</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap -"><span class="tap">-</span></div><div class="key" aria-label="tap 0"><span class="tap">0</span></div><div class="key" aria-label="tap ."><span class="tap">.</span></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#b48ce8" aria-labelledby="SYM-title">
+  <header class="layer-head">
+    <h2 id="SYM-title">Sym</h2>
+    <div class="activation">hold</div>
+  </header>
+  <div class="board" role="img" aria-label="Sym layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Boot"><span class="tap">Boot</span></div><div class="key" aria-label="tap →Tap"><span class="tap">→Tap</span></div><div class="key" aria-label="tap →Extra"><span class="tap">→Extra</span></div><div class="key" aria-label="tap →Base"><span class="tap">→Base</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap {"><span class="tap">{</span></div><div class="key" aria-label="tap &amp;"><span class="tap">&amp;</span></div><div class="key" aria-label="tap *"><span class="tap">*</span></div><div class="key" aria-label="tap ("><span class="tap">(</span></div><div class="key" aria-label="tap }"><span class="tap">}</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap LGUI (super)"><span class="tap long">LGUI (super)</span></div><div class="key" aria-label="tap LALT"><span class="tap">LALT</span></div><div class="key" aria-label="tap LCTRL"><span class="tap">LCTRL</span></div><div class="key" aria-label="tap LSHFT"><span class="tap">LSHFT</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap +"><span class="tap">+</span></div><div class="key" aria-label="tap $"><span class="tap">$</span></div><div class="key" aria-label="tap %"><span class="tap">%</span></div><div class="key" aria-label="tap ^"><span class="tap">^</span></div><div class="key" aria-label="tap :"><span class="tap">:</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap AltGr"><span class="tap">AltGr</span></div><div class="key" aria-label="tap →Mouse"><span class="tap long">→Mouse</span></div><div class="key" aria-label="tap →Sym"><span class="tap">→Sym</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap |"><span class="tap">|</span></div><div class="key" aria-label="tap !"><span class="tap">!</span></div><div class="key" aria-label="tap @"><span class="tap">@</span></div><div class="key" aria-label="tap #"><span class="tap">#</span></div><div class="key" aria-label="tap ~"><span class="tap">~</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key pressed" aria-label="TAB held to activate Sym"><span class="tap">TAB</span><span class="pressed-caption">HELD</span></div><div class="key" aria-label="tap _"><span class="tap">_</span></div><div class="key" aria-label="tap ("><span class="tap">(</span></div><div class="key" aria-label="tap )"><span class="tap">)</span></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#e8935e" aria-labelledby="FUN-title">
+  <header class="layer-head">
+    <h2 id="FUN-title">Fun</h2>
+    <div class="activation">hold</div>
+  </header>
+  <div class="board" role="img" aria-label="Fun layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap →Tap"><span class="tap">→Tap</span></div><div class="key" aria-label="tap →Extra"><span class="tap">→Extra</span></div><div class="key" aria-label="tap →Base"><span class="tap">→Base</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap PrtSc"><span class="tap">PrtSc</span></div><div class="key" aria-label="tap F7"><span class="tap">F7</span></div><div class="key" aria-label="tap F8"><span class="tap">F8</span></div><div class="key" aria-label="tap F9"><span class="tap">F9</span></div><div class="key" aria-label="tap F10"><span class="tap">F10</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap LGUI (super)"><span class="tap long">LGUI (super)</span></div><div class="key" aria-label="tap LALT"><span class="tap">LALT</span></div><div class="key" aria-label="tap LCTRL"><span class="tap">LCTRL</span></div><div class="key" aria-label="tap LSHFT"><span class="tap">LSHFT</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap ScrLk"><span class="tap">ScrLk</span></div><div class="key" aria-label="tap F4"><span class="tap">F4</span></div><div class="key" aria-label="tap F5"><span class="tap">F5</span></div><div class="key" aria-label="tap F6"><span class="tap">F6</span></div><div class="key" aria-label="tap F11"><span class="tap">F11</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap AltGr"><span class="tap">AltGr</span></div><div class="key" aria-label="tap →Media"><span class="tap long">→Media</span></div><div class="key" aria-label="tap →Fun"><span class="tap">→Fun</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap Pause"><span class="tap">Pause</span></div><div class="key" aria-label="tap F1"><span class="tap">F1</span></div><div class="key" aria-label="tap F2"><span class="tap">F2</span></div><div class="key" aria-label="tap F3"><span class="tap">F3</span></div><div class="key" aria-label="tap F12"><span class="tap">F12</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key pressed" aria-label="ESC held to activate Fun"><span class="tap">ESC</span><span class="pressed-caption">HELD</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap TAB"><span class="tap">TAB</span></div><div class="key" aria-label="tap SPACE"><span class="tap">SPACE</span></div><div class="key" aria-label="tap Menu"><span class="tap">Menu</span></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#e87e8a" aria-labelledby="MEDIA-title">
+  <header class="layer-head">
+    <h2 id="MEDIA-title">Media</h2>
+    <div class="activation">hold</div>
+  </header>
+  <div class="board" role="img" aria-label="Media layer key layout">
+    <div class="key-row"><div class="key" aria-label="tap Studio Unlock"><span class="tap long">Studio Unlock</span></div><div class="key" aria-label="tap Hue+"><span class="tap">Hue+</span></div><div class="key" aria-label="tap Sat+"><span class="tap">Sat+</span></div><div class="key" aria-label="tap VolUp"><span class="tap">VolUp</span></div><div class="key" aria-label="tap Bri+"><span class="tap">Bri+</span></div><div class="key" aria-label="tap RGB"><span class="tap">RGB</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap →Base"><span class="tap">→Base</span></div><div class="key" aria-label="tap →Extra"><span class="tap">→Extra</span></div><div class="key" aria-label="tap →Tap"><span class="tap">→Tap</span></div><div class="key empty" aria-label="empty"></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Effect"><span class="tap">Effect</span></div><div class="key" aria-label="tap Prev"><span class="tap">Prev</span></div><div class="key" aria-label="tap VolDn"><span class="tap">VolDn</span></div><div class="key" aria-label="tap Next"><span class="tap">Next</span></div><div class="key" aria-label="tap OUT"><span class="tap">OUT</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap RSHFT"><span class="tap">RSHFT</span></div><div class="key" aria-label="tap RCTRL"><span class="tap">RCTRL</span></div><div class="key" aria-label="tap RALT"><span class="tap">RALT</span></div><div class="key" aria-label="tap RGUI (super)"><span class="tap long">RGUI (super)</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key" aria-label="tap BT CLR"><span class="tap">BT CLR</span></div><div class="key" aria-label="tap BT0"><span class="tap">BT0</span></div><div class="key" aria-label="tap BT1"><span class="tap">BT1</span></div><div class="key" aria-label="tap BT2"><span class="tap">BT2</span></div><div class="key" aria-label="tap BT3"><span class="tap">BT3</span></div><div class="key" aria-label="tap BT4"><span class="tap">BT4</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap →Media"><span class="tap long">→Media</span></div><div class="key" aria-label="tap →Fun"><span class="tap">→Fun</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key" aria-label="tap Mute"><span class="tap">Mute</span></div><div class="key" aria-label="tap Play"><span class="tap">Play</span></div><div class="key" aria-label="tap Stop"><span class="tap">Stop</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key pressed" aria-label="DEL held to activate layer"><span class="tap">DEL</span><span class="pressed-caption">HELD</span></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#8fb8d8" aria-labelledby="MOUSEVIR-title">
+  <header class="layer-head">
+    <h2 id="MOUSEVIR-title">MouseVir</h2>
+    <div class="activation">hold · Miryoku virtual-mouse layer (FLIP) · hold RET on Base</div>
+  </header>
+  <div class="board" role="img" aria-label="MouseVir layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Wheel Up"><span class="tap long">Wheel Up</span></div><div class="key" aria-label="tap Wheel Left"><span class="tap long">Wheel Left</span></div><div class="key" aria-label="tap Mouse Up"><span class="tap long">Mouse Up</span></div><div class="key" aria-label="tap Wheel Right"><span class="tap long">Wheel Right</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap →Base"><span class="tap">→Base</span></div><div class="key" aria-label="tap →Extra"><span class="tap">→Extra</span></div><div class="key" aria-label="tap →Tap"><span class="tap">→Tap</span></div><div class="key empty" aria-label="empty"></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Wheel Down"><span class="tap long">Wheel Down</span></div><div class="key" aria-label="tap Mouse Left"><span class="tap long">Mouse Left</span></div><div class="key" aria-label="tap Mouse Down"><span class="tap long">Mouse Down</span></div><div class="key" aria-label="tap Mouse Right"><span class="tap long">Mouse Right</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap RSHFT"><span class="tap">RSHFT</span></div><div class="key" aria-label="tap RCTRL"><span class="tap">RCTRL</span></div><div class="key" aria-label="tap RALT"><span class="tap">RALT</span></div><div class="key" aria-label="tap RGUI (super)"><span class="tap long">RGUI (super)</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Undo"><span class="tap">Undo</span></div><div class="key" aria-label="tap Cut"><span class="tap">Cut</span></div><div class="key" aria-label="tap Copy"><span class="tap">Copy</span></div><div class="key" aria-label="tap Paste"><span class="tap">Paste</span></div><div class="key" aria-label="tap Redo"><span class="tap">Redo</span></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap →Mouse"><span class="tap long">→Mouse</span></div><div class="key" aria-label="tap →Sym"><span class="tap">→Sym</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key" aria-label="tap Btn3 (middle click)"><span class="tap long">Btn3 (middle click)</span></div><div class="key" aria-label="tap Btn1 (left click)"><span class="tap long">Btn1 (left click)</span></div><div class="key" aria-label="tap Btn2 (right click)"><span class="tap long">Btn2 (right click)</span></div><div class="key pressed" aria-label="RET held to activate layer"><span class="tap">RET</span><span class="pressed-caption">HELD</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#8fb8d8" aria-labelledby="MOUSE-title">
+  <header class="layer-head">
+    <h2 id="MOUSE-title">Mouse</h2>
+    <div class="activation">touch · touch-activated · stock MOU + Button-layer content</div>
+  </header>
+  <div class="activation-strip" aria-label="touch trackpad"><span>touch</span><span class="strip-key">trackpad</span></div>
+  <div class="board" role="img" aria-label="Mouse layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Undo"><span class="tap">Undo</span></div><div class="key" aria-label="tap Cut"><span class="tap">Cut</span></div><div class="key" aria-label="tap Copy"><span class="tap">Copy</span></div><div class="key" aria-label="tap Paste"><span class="tap">Paste</span></div><div class="key" aria-label="tap Redo"><span class="tap">Redo</span></div><div class="key" aria-label="tap Redo"><span class="tap">Redo</span></div><div class="key" aria-label="tap Paste"><span class="tap">Paste</span></div><div class="key" aria-label="tap Copy"><span class="tap">Copy</span></div><div class="key" aria-label="tap Cut"><span class="tap">Cut</span></div><div class="key" aria-label="tap Undo"><span class="tap">Undo</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap LGUI (super)"><span class="tap long">LGUI (super)</span></div><div class="key" aria-label="tap LALT"><span class="tap">LALT</span></div><div class="key" aria-label="tap LCTRL"><span class="tap">LCTRL</span></div><div class="key" aria-label="tap LSHFT"><span class="tap">LSHFT</span></div><div class="key empty" aria-label="empty"></div><div class="key empty" aria-label="empty"></div><div class="key" aria-label="tap RSHFT"><span class="tap">RSHFT</span></div><div class="key" aria-label="tap RCTRL"><span class="tap">RCTRL</span></div><div class="key" aria-label="tap RALT"><span class="tap">RALT</span></div><div class="key" aria-label="tap RGUI (super)"><span class="tap long">RGUI (super)</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Undo"><span class="tap">Undo</span></div><div class="key" aria-label="tap Cut"><span class="tap">Cut</span></div><div class="key" aria-label="tap Copy"><span class="tap">Copy</span></div><div class="key" aria-label="tap Paste"><span class="tap">Paste</span></div><div class="key" aria-label="tap Redo"><span class="tap">Redo</span></div><div class="key" aria-label="tap Redo"><span class="tap">Redo</span></div><div class="key" aria-label="tap Paste"><span class="tap">Paste</span></div><div class="key" aria-label="tap Copy"><span class="tap">Copy</span></div><div class="key" aria-label="tap Cut"><span class="tap">Cut</span></div><div class="key" aria-label="tap Undo"><span class="tap">Undo</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key" aria-label="tap Btn3 (middle click)"><span class="tap long">Btn3 (middle click)</span></div><div class="key" aria-label="tap Btn1 (left click)"><span class="tap long">Btn1 (left click)</span></div><div class="key" aria-label="tap Btn2 (right click)"><span class="tap long">Btn2 (right click)</span></div><div class="key" aria-label="tap Btn2 (right click)"><span class="tap long">Btn2 (right click)</span></div><div class="key" aria-label="tap Btn1 (left click)"><span class="tap long">Btn1 (left click)</span></div><div class="key" aria-label="tap Btn3 (middle click)"><span class="tap long">Btn3 (middle click)</span></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#6ea8fe" aria-labelledby="EXTRA-title">
+  <header class="layer-head">
+    <h2 id="EXTRA-title">Extra</h2>
+    <div class="activation">double-tap · MIRYOKU_EXTRA=COLEMAKDH</div>
+  </header>
+  <div class="activation-strip" aria-label="→Extra"><span>double-tap</span><span class="strip-key">→Extra</span></div>
+  <div class="board" role="img" aria-label="Extra layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Q"><span class="tap">Q</span></div><div class="key" aria-label="tap W"><span class="tap">W</span></div><div class="key" aria-label="tap F"><span class="tap">F</span></div><div class="key" aria-label="tap P"><span class="tap">P</span></div><div class="key" aria-label="tap B"><span class="tap">B</span></div><div class="key" aria-label="tap J"><span class="tap">J</span></div><div class="key" aria-label="tap L"><span class="tap">L</span></div><div class="key" aria-label="tap U"><span class="tap">U</span></div><div class="key" aria-label="tap Y"><span class="tap">Y</span></div><div class="key" aria-label="tap &#x27;"><span class="tap">'</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap A, hold LGUI (super)"><span class="tap">A</span><span class="hold long">LGUI (super)</span></div><div class="key" aria-label="tap R, hold LALT"><span class="tap">R</span><span class="hold">LALT</span></div><div class="key" aria-label="tap S, hold LCTRL"><span class="tap">S</span><span class="hold">LCTRL</span></div><div class="key" aria-label="tap T, hold LSHFT"><span class="tap">T</span><span class="hold">LSHFT</span></div><div class="key" aria-label="tap G"><span class="tap">G</span></div><div class="key" aria-label="tap M"><span class="tap">M</span></div><div class="key" aria-label="tap N, hold RSHFT"><span class="tap">N</span><span class="hold">RSHFT</span></div><div class="key" aria-label="tap E, hold RCTRL"><span class="tap">E</span><span class="hold">RCTRL</span></div><div class="key" aria-label="tap I, hold RALT"><span class="tap">I</span><span class="hold">RALT</span></div><div class="key" aria-label="tap O, hold RGUI (super)"><span class="tap">O</span><span class="hold long">RGUI (super)</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Z, hold →Mouse"><span class="tap">Z</span><span class="hold">→Mouse</span></div><div class="key" aria-label="tap X, hold AltGr"><span class="tap">X</span><span class="hold">AltGr</span></div><div class="key" aria-label="tap C"><span class="tap">C</span></div><div class="key" aria-label="tap D"><span class="tap">D</span></div><div class="key" aria-label="tap V"><span class="tap">V</span></div><div class="key" aria-label="tap K"><span class="tap">K</span></div><div class="key" aria-label="tap H"><span class="tap">H</span></div><div class="key" aria-label="tap ,"><span class="tap">,</span></div><div class="key" aria-label="tap ."><span class="tap">.</span></div><div class="key" aria-label="tap /, hold →Mouse"><span class="tap">/</span><span class="hold">→Mouse</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key" aria-label="tap ESC, hold →Media"><span class="tap">ESC</span><span class="hold">→Media</span></div><div class="key" aria-label="tap SPACE, hold →Nav"><span class="tap">SPACE</span><span class="hold">→Nav</span></div><div class="key" aria-label="tap TAB"><span class="tap">TAB</span></div><div class="key" aria-label="tap RET, hold →Sym"><span class="tap">RET</span><span class="hold">→Sym</span></div><div class="key" aria-label="tap BSPC, hold →Num"><span class="tap">BSPC</span><span class="hold">→Num</span></div><div class="key" aria-label="tap DEL, hold →Fun"><span class="tap">DEL</span><span class="hold">→Fun</span></div></div>
+  </div>
+</section>
+<section class="layer" style="--accent:#9aa4b2" aria-labelledby="TAP-title">
+  <header class="layer-head">
+    <h2 id="TAP-title">Tap</h2>
+    <div class="activation">double-tap · plain QWERTY</div>
+  </header>
+  <div class="activation-strip" aria-label="→Tap"><span>double-tap</span><span class="strip-key">→Tap</span></div>
+  <div class="board" role="img" aria-label="Tap layer key layout">
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Q"><span class="tap">Q</span></div><div class="key" aria-label="tap W"><span class="tap">W</span></div><div class="key" aria-label="tap E"><span class="tap">E</span></div><div class="key" aria-label="tap R"><span class="tap">R</span></div><div class="key" aria-label="tap T"><span class="tap">T</span></div><div class="key" aria-label="tap Y"><span class="tap">Y</span></div><div class="key" aria-label="tap U"><span class="tap">U</span></div><div class="key" aria-label="tap I"><span class="tap">I</span></div><div class="key" aria-label="tap O"><span class="tap">O</span></div><div class="key" aria-label="tap P"><span class="tap">P</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap A"><span class="tap">A</span></div><div class="key" aria-label="tap S"><span class="tap">S</span></div><div class="key" aria-label="tap D"><span class="tap">D</span></div><div class="key" aria-label="tap F"><span class="tap">F</span></div><div class="key" aria-label="tap G"><span class="tap">G</span></div><div class="key" aria-label="tap H"><span class="tap">H</span></div><div class="key" aria-label="tap J"><span class="tap">J</span></div><div class="key" aria-label="tap K"><span class="tap">K</span></div><div class="key" aria-label="tap L"><span class="tap">L</span></div><div class="key" aria-label="tap &#x27;"><span class="tap">'</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="key-row"><div class="key unmapped" aria-label="unmapped"></div><div class="key" aria-label="tap Z"><span class="tap">Z</span></div><div class="key" aria-label="tap X"><span class="tap">X</span></div><div class="key" aria-label="tap C"><span class="tap">C</span></div><div class="key" aria-label="tap V"><span class="tap">V</span></div><div class="key" aria-label="tap B"><span class="tap">B</span></div><div class="key" aria-label="tap N"><span class="tap">N</span></div><div class="key" aria-label="tap M"><span class="tap">M</span></div><div class="key" aria-label="tap ,"><span class="tap">,</span></div><div class="key" aria-label="tap ."><span class="tap">.</span></div><div class="key" aria-label="tap /"><span class="tap">/</span></div><div class="key unmapped" aria-label="unmapped"></div></div>
+    <div class="thumb-row"><div class="key" aria-label="tap ESC"><span class="tap">ESC</span></div><div class="key" aria-label="tap SPACE"><span class="tap">SPACE</span></div><div class="key" aria-label="tap TAB"><span class="tap">TAB</span></div><div class="key" aria-label="tap RET"><span class="tap">RET</span></div><div class="key" aria-label="tap BSPC"><span class="tap">BSPC</span></div><div class="key" aria-label="tap DEL"><span class="tap">DEL</span></div></div>
+  </div>
+</section>
+    </div>
+    <footer><div class="legend" aria-label="Legend"><span>upper label = tap · lower accent label = hold</span>
+<span>hold a Base thumb key for its layer: left ESC→Fun / SPACE→Num / TAB→Sym · right RET→MouseVir / BSPC→Nav / DEL→Media</span>
+<span>touch the trackpad → Mouse layer (on Extra, also hold Z or /)</span>
+<span>while Nav or Num is held, one-finger trackpad motion scrolls</span>
+<span>6 outer-column keys: on Base, left = VolUp / VolDn / Mute and right = BriUp / BriDn / AltGr (top to bottom); on Media, outer-left = Studio Unlock / blank / BT CLR; blank everywhere else</span>
+</div></footer>
+  </main>
+</body>
+</html>

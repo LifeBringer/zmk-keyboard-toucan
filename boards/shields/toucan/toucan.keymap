@@ -1,242 +1,82 @@
-/*
- * SOURCE OF TRUTH: config/toucan.keymap
- * (boards/shields/toucan/toucan.keymap is a byte-identical mirror -- re-copy
- * it after every edit). Edit config/toucan.keymap -> push -> CI build ->
- * flash -> ZMK Studio "Restore Stock Settings" to adopt. Do NOT make
- * persistent edits in ZMK Studio: they shadow this keymap and are lost on
- * the next adopt. (Exception: adding empty status="reserved" layers is fine.)
- */
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/outputs.h>
-#include <dt-bindings/zmk/mouse.h>
+#include <dt-bindings/zmk/pointing.h>
 
 #define BASE 0
-#define SYM  1
-#define NAV  2
-#define NUM  3
-#define ADJ  4
-
-/*
- * Toucan key positions
- *
- *  ╭──────────────────────────╮ ╭──────────────────────────╮
- *  │  0   1   2   3   4   5  │ │  6   7   8   9  10  11  │
- *  │ 12  13  14  15  16  17  │ │ 18  19  20  21  22  23  │
- *  │ 24  25  26  27  28  29  │ │ 30  31  32  33  34  35  │
- *  ╰───────────╮  36  37  38 │ │ 39  40  41 ╭────────────╯
- *              ╰─────────────╯ ╰────────────╯
- *
- * HOME ROW MODS (GACS — pinky→index, BASE layer only)
- *   Left:  A=LGUI  S=LALT  D=LCTRL  F=LSHFT
- *   Right: J=RSHFT K=RCTRL L=RALT   ;=RGUI
- *
- * LAYER ACCESS
- *   pos 36 left  thumb 1: hold → NUM
- *   pos 37 left  thumb 2: hold → NAV
- *   pos 40 right thumb 2: hold → SYM
- *   NAV (2) + SYM (1) held simultaneously → ADJ (4) via conditional_layers
- *
- * NOTES
- *   Ñ  (SYM pos 30): &kp RA(N) = AltGr+N. Works on Windows US-International
- *      or macOS Spanish/US layouts. Change to a Unicode macro if needed.
- *   Emoji (SYM pos 31): &kp LG(DOT) = Win+. (Windows emoji picker).
- *   Fn (BASE pos 24 / ADJ pos 17): currently &trans — assign as needed.
- */
-
-#define KEYS_L  0  1  2  3  4  5  12 13 14 15 16 17  24 25 26 27 28 29  36 37 38
-#define KEYS_R  6  7  8  9 10 11  18 19 20 21 22 23  30 31 32 33 34 35  39 40 41
-#define THUMBS 36 37 38 39 40 41
+#define NAV  1
+#define SYM  2
+#define ADJ  3
 
 / {
-    behaviors {
-        // ── Balanced home-row mod — fires hold only on opposite-hand keypress ──
-        hml: home_row_mod_left {
-            compatible = "zmk,behavior-hold-tap";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <280>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <150>;
-            bindings = <&kp>, <&kp>;
-            hold-trigger-key-positions = <KEYS_R THUMBS>;
-            hold-trigger-on-release;
-        };
-        hmr: home_row_mod_right {
-            compatible = "zmk,behavior-hold-tap";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <280>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <150>;
-            bindings = <&kp>, <&kp>;
-            hold-trigger-key-positions = <KEYS_L THUMBS>;
-            hold-trigger-on-release;
-        };
-
-        // ── tap=ESC  hold=PRTSCN ──────────────────────────────────────────────
-        psc_esc: psc_esc {
-            compatible = "zmk,behavior-hold-tap";
-            #binding-cells = <2>;
-            flavor = "tap-preferred";
-            tapping-term-ms = <350>;   // deliberate hold required; prevents accidental PrtScn
-            bindings = <&kp>, <&kp>;
-        };
-    };
-
     conditional_layers {
         compatible = "zmk,conditional-layers";
-        // Hold NAV (left thumb 2) + SYM (right thumb 2) simultaneously → ADJ
         tri_layer {
-            if-layers = <NAV SYM>;
-            then-layer = <ADJ>;
+            if-layers = <1 2>;
+            then-layer = <3>;
         };
     };
 
     keymap {
         compatible = "zmk,keymap";
 
-        // ════════════════════════════════════════════════════════════════
-        //  LAYER 0 — BASE
-        //
-        //  ╭──────────────┬──────┬──────┬──────┬──────┬──────╮   ╭──────┬──────┬──────┬──────┬──────┬──────╮
-        //  │  PRTSCN/ESC  │  Q   │  W   │  E   │  R   │  T   │   │  Y   │  U   │  I   │  O   │  P   │      │
-        //  ├──────────────┼──────┼──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┼──────┼──────┼──────┤
-        //  │     TAB      │GUI/A │ALT/S │CTL/D │SHF/F │  G   │   │  H   │SHF/J │CTL/K │ALT/L │GUI/; │      │
-        //  ├──────────────┼──────┼──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┼──────┼──────┼──────┤
-        //  │      Fn      │  Z   │  X   │  C   │  V   │  B   │   │  N   │  M   │  ,   │  .   │  /   │      │
-        //  ╰──────────────┴──────┴──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┴──────┴──────┴──────╯
-        //                               │ NUM  │ NAV  │ SPC  │   │ BSPC │ SYM  │ ENT  │
-        //                               ╰──────┴──────┴──────╯   ╰──────┴──────┴──────╯
-        // ════════════════════════════════════════════════════════════════
         base {
             display-name = "BASE";
             bindings = <
-                &psc_esc PSCRN ESC  &kp Q        &kp W        &kp E         &kp R         &kp T        &kp Y    &kp U         &kp I         &kp O        &kp P           &none
-                &kp TAB             &hml LGUI A  &hml LALT S  &hml LCTRL D  &hml LSHFT F  &kp G        &kp H    &hmr RSHFT J  &hmr RCTRL K  &hmr RALT L  &hmr RGUI SEMI  &none
-                &trans              &kp Z        &kp X        &kp C         &kp V         &kp B        &kp N    &kp M         &kp COMMA     &kp DOT      &kp FSLH        &none
-                                                              &mo NUM       &mo NAV       &kp SPACE    &kp BSPC &mo SYM       &kp RET
+                &kp TAB   &kp Q &kp W &kp E &kp R &kp T   &kp Y &kp U  &kp I     &kp O   &kp P    &kp BSPC
+                &kp LCTRL &kp A &kp S &kp D &kp F &kp G   &kp H &kp J  &kp K     &kp L   &kp SEMI &kp SQT
+                &kp LSHFT &kp Z &kp X &kp C &kp V &kp B   &kp N &kp M  &kp COMMA &kp DOT &kp FSLH &kp ESC
+                                &kp LGUI &mo 1 &kp SPACE   &kp RET &mo 2 &kp RALT
             >;
         };
 
-        // ════════════════════════════════════════════════════════════════
-        //  LAYER 1 — SYM  (hold right thumb 2)
-        //
-        //  Left: symbol row + ESDF=arrow cluster + brackets row
-        //  Right: bitwise/shift symbols + Ñ, emoji, quotes
-        //
-        //  ╭──────┬──────┬──────┬──────┬──────┬──────╮   ╭──────┬──────┬──────┬──────┬──────┬──────╮
-        //  │      │  !   │  @   │  ↑   │  $   │  %   │   │  ^   │  &   │  *   │  `   │  -   │      │
-        //  ├──────┼──────┼──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┼──────┼──────┼──────┤
-        //  │      │  (   │  ←   │  ↓   │  →   │  )   │   │  |   │  _   │  ~   │  =   │  +   │      │
-        //  ├──────┼──────┼──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┼──────┼──────┼──────┤
-        //  │      │  [   │  ]   │  #   │  {   │  }   │   │  ñ   │emoji │  '   │  "   │  \   │      │
-        //  ╰──────┴──────┴──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┴──────┴──────┴──────╯
-        //                       │(NUM) │(NAV*)│      │   │      │ held │      │
-        //                       ╰──────┴──────┴──────╯   ╰──────┴──────┴──────╯
-        //  * left thumb 2 passes through to &mo NAV — holding both thumbs fires ADJ.
-        // ════════════════════════════════════════════════════════════════
-        sym {
-            display-name = "SYM";
-            bindings = <
-                &none  &kp EXCL  &kp AT    &kp UP    &kp DLLR  &kp PRCNT    &kp CARET  &kp AMPS   &kp ASTRK  &kp GRAVE  &kp MINUS  &none
-                &none  &kp LPAR  &kp LEFT  &kp DOWN  &kp RIGHT &kp RPAR     &kp PIPE   &kp UNDER  &kp TILDE  &kp EQUAL  &kp PLUS   &none
-                &none  &kp LBKT  &kp RBKT  &kp HASH  &kp LBRC  &kp RBRC     &kp RA(N)  &kp LG(DOT) &kp SQT  &kp DQT    &kp BSLH   &none
-                                           &trans    &trans    &trans       &trans     &trans     &trans
-            >;
-        };
-
-        // ════════════════════════════════════════════════════════════════
-        //  LAYER 2 — NAV  (hold left thumb 2)
-        //
-        //  Left: brightness/media outer col + explicit mods on ASDF + mouse clicks
-        //  Right: page nav row 0 + vim arrows row 1 + repeat/ins row 2 + vol outer col
-        //
-        //  ╭──────┬────────┬──────┬──────┬──────┬───────╮   ╭──────┬──────┬──────┬──────┬──────┬────────╮
-        //  │BRI_UP│        │      │      │      │MDL_CLK│   │ HOME │ PGUP │ PGDN │  END │ BSPC │ VOL_UP │
-        //  ├──────┼────────┼──────┼──────┼──────┼───────┤   ├──────┼──────┼──────┼──────┼──────┼────────┤
-        //  │BRI_DN│  GUI   │ ALT  │ CTL  │ SHF  │RHT_CLK│   │  ←   │  ↓   │  ↑   │  →   │ DEL  │ VOL_DN │
-        //  ├──────┼────────┼──────┼──────┼──────┼───────┤   ├──────┼──────┼──────┼──────┼──────┼────────┤
-        //  │ C_PP │STD_UNLK│      │      │      │       │   │ REP  │ INS  │      │      │      │  MUTE  │
-        //  ╰──────┴────────┴──────┼──────┼──────┼───────┤   ├──────┼──────┼──────┴──────┴──────┴────────╯
-        //                         │(NUM) │ held │       │   │ DEL  │(SYM*)│ ESC  │
-        //                         ╰──────┴──────┴───────╯   ╰──────┴──────┴──────╯
-        //  * right thumb 2 passes through to &mo SYM — holding both thumbs fires ADJ.
-        // ════════════════════════════════════════════════════════════════
         nav {
             display-name = "NAV";
             bindings = <
-                &kp C_BRI_UP  &trans         &trans    &trans     &trans     &mkp MCLK    &kp HOME   &kp PG_UP  &kp PG_DN  &kp END    &kp BSPC  &kp C_VOL_UP
-                &kp C_BRI_DN  &kp LGUI       &kp LALT  &kp LCTRL  &kp LSHFT  &mkp RCLK    &kp LEFT   &kp DOWN   &kp UP     &kp RIGHT  &kp DEL   &kp C_VOL_DN
-                &kp C_PP      &studio_unlock &trans    &trans     &trans     &trans       &key_repeat &kp INS   &trans     &trans     &trans    &kp C_MUTE
-                                                        &trans     &trans     &trans       &kp DEL    &trans     &kp ESC
+                &kp TAB     &kp N1          &kp N2       &kp N3       &kp N4       &kp N5         &kp N6   &kp N7   &kp N8 &kp N9    &kp N0 &kp BSPC
+                &bt BT_CLR  &bt BT_SEL 0    &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4   &kp LEFT &kp DOWN &kp UP &kp RIGHT &trans &trans
+                &kp LSHFT   &studio_unlock  &trans       &trans       &trans       &trans         &trans   &trans   &trans &trans    &trans &trans
+                                                &kp LGUI     &trans       &kp SPACE      &kp RET  &trans   &kp RALT
             >;
         };
 
-        // ════════════════════════════════════════════════════════════════
-        //  LAYER 3 — NUM  (hold left thumb 1)
-        //
-        //  Left: explicit mods on ASDF (no HRM delay) for Ctrl+1, Alt+4 etc.
-        //  Right: full KP numpad
-        //
-        //  ╭──────┬──────┬──────┬──────┬──────┬──────╮   ╭──────┬──────┬──────┬──────┬──────┬──────╮
-        //  │      │      │      │      │      │      │   │  /   │  7   │  8   │  9   │  -   │      │
-        //  ├──────┼──────┼──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┼──────┼──────┼──────┤
-        //  │      │ GUI  │ ALT  │ CTRL │ SHFT │      │   │  *   │  4   │  5   │  6   │  +   │      │
-        //  ├──────┼──────┼──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┼──────┼──────┼──────┤
-        //  │      │      │      │      │      │      │   │  .   │  1   │  2   │  3   │  0   │      │
-        //  ╰──────┴──────┴──────┼──────┼──────┼──────┤   ├──────┼──────┼──────┴──────┴──────┴──────╯
-        //                       │ held │      │ BSPC │   │ DEL  │ BASE │  =   │
-        //                       ╰──────┴──────┴──────╯   ╰──────┴──────┴──────╯
-        // ════════════════════════════════════════════════════════════════
-        num {
-            display-name = "NUM";
+        sym {
+            display-name = "SYM";
             bindings = <
-                &trans  &trans    &trans    &trans     &trans     &trans    &kp KP_DIVIDE    &kp KP_N7  &kp KP_N8  &kp KP_N9  &kp KP_MINUS  &trans
-                &trans  &kp LGUI  &kp LALT  &kp LCTRL  &kp LSHFT  &trans    &kp KP_MULTIPLY  &kp KP_N4  &kp KP_N5  &kp KP_N6  &kp KP_PLUS   &trans
-                &trans  &trans    &trans    &trans     &trans     &trans    &kp KP_DOT       &kp KP_N1  &kp KP_N2  &kp KP_N3  &kp KP_N0     &trans
-                                            &trans     &trans     &kp BSPC  &kp DEL          &to BASE   &kp KP_EQUAL
+                &kp TAB   &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT   &kp CARET &kp AMPS  &kp KP_MULTIPLY &kp LPAR &kp RPAR &kp BSPC
+                &kp LCTRL &trans   &trans &trans   &trans   &trans      &kp MINUS &kp EQUAL &kp LBKT        &kp RBKT &kp BSLH &kp GRAVE
+                &kp LSHFT &trans   &trans &trans   &trans   &trans      &kp UNDER &kp PLUS  &kp LBRC        &kp RBRC &kp PIPE &kp TILDE
+                                          &kp LGUI &trans   &kp SPACE   &kp RET   &trans    &kp RALT
             >;
         };
 
-        // ════════════════════════════════════════════════════════════════
-        //  LAYER 4 — ADJ  (hold NAV + SYM simultaneously)
-        //
-        //  Left: BT profiles row 0 + workspace shortcuts row 1 + BT_CLR row 2
-        //  Right: cursor ↑↓ + F-keys grid + workspace/selection shortcuts
-        //
-        //  ╭──────────┬────────┬──────────┬──────────┬──────────┬──────────╮   ╭────────┬──────┬──────┬──────┬──────┬──────╮
-        //  │ OUT_TOG  │BT_SEL 0│ BT_SEL 1 │ BT_SEL 2 │ BT_SEL 3 │ BT_SEL 4 │   │   ↑    │  F7  │  F8  │  F9  │ F10  │      │
-        //  ├──────────┼────────┼──────────┼──────────┼──────────┼──────────┤   ├────────┼──────┼──────┼──────┼──────┼──────────┤
-        //  │  GUI+←   │  GUI   │   ALT    │   CTL    │   SHF    │    Fn    │   │   ↓    │  F4  │  F5  │  F6  │ F11  │  GUI+→   │
-        //  ├──────────┼────────┼──────────┼──────────┼──────────┼──────────┤   ├────────┼──────┼──────┼──────┼──────┼──────────┤
-        //  │          │ BT_CLR │          │          │          │          │   │GUI+S+→ │  F1  │  F2  │  F3  │ F12  │          │
-        //  ╰──────────┴────────┴──────────┼──────────┼──────────┼──────────┤   ├────────┼──────┼──────┴──────┴──────┴──────────╯
-        //                                 │  (NUM)   │  (held)  │          │   │        │(held)│      │
-        //                                 ╰──────────┴──────────┴──────────╯   ╰────────┴──────┴──────╯
-        // ════════════════════════════════════════════════════════════════
         adj {
             display-name = "ADJ";
             bindings = <
-                &out OUT_TOG   &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4    &kp UP          &kp F7  &kp F8  &kp F9  &kp F10  &none
-                &kp LG(LEFT)   &kp LGUI      &kp LALT      &kp LCTRL     &kp LSHFT     &trans          &kp DOWN        &kp F4  &kp F5  &kp F6  &kp F11  &kp LG(RIGHT)
-                &trans         &bt BT_CLR    &trans        &trans        &trans        &trans          &kp LG(LS(RIGHT)) &kp F1  &kp F2  &kp F3  &kp F12  &none
-                                                            &trans        &trans        &trans          &trans          &trans  &trans
+                &mo TAB   &trans &kp F7 &kp F8 &kp F9 &kp F12   &kp C_VOL_DN &kp C_MUTE  &kp C_VOL_UP &trans &trans &kp BSPC
+                &kp LCTRL &trans &kp F4 &kp F5 &kp F6 &kp F11   &trans       &trans      &trans       &trans &trans &trans
+                &bt LSHFT &trans &kp F1 &kp F2 &kp F3 &kp F10   &trans       &trans      &trans       &trans &trans &trans
+                                   &kp LGUI &mo NAV &kp SPACE   &kp RET &mo 2 &kp RALT
             >;
         };
 
-        // Reserved slots — required for ZMK Studio. Do not remove.
-        extra_1 {
-            status = "reserved";
+        mouse {
+            display-name = "MOU";
+            bindings = <
+                &trans &trans &trans &trans &trans &trans           &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans &trans           &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans &trans           &trans &trans &trans &trans &trans &trans
+                            &mkp MCLK &mkp LCLK &mkp RCLK           &mkp LCLK &mkp RCLK &mkp MCLK
+            >;
         };
 
         extra_2 {
-            status = "reserved";
+                status = "reserved";
         };
 
         extra_3 {
-            status = "reserved";
+                status = "reserved";
         };
     };
 };
